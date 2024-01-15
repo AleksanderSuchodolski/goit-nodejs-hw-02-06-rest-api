@@ -1,0 +1,26 @@
+import express from 'express';
+
+import contactsController from '../../controllers/contacts-controller.js';
+
+import { isEmptyBody } from "../../midlewares/index.js";
+
+import { validateBody } from '../../decorators/index.js';
+
+import { contactAddSchema, contactUpdateSchema } from '../../schemas/contacts-schemas.js';
+
+
+const contactsRouter = express.Router()
+
+contactsRouter.get('/', contactsController.getAll);
+
+contactsRouter.get('/:contactId', contactsController.getById);
+
+contactsRouter.post('/', isEmptyBody, validateBody(contactAddSchema), contactsController.add);
+
+contactsRouter.put('/:contactId', isEmptyBody, validateBody(contactUpdateSchema), contactsController.updateById);
+
+contactsRouter.delete('/:contactId', contactsController.deleteById);
+
+
+
+export default contactsRouter;
