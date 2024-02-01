@@ -22,7 +22,7 @@ const contactSchema = new Schema({
 
 contactSchema.post("save", handleSaveError);
 
-contactSchema.post("findOneAndUpdate", addUpdateSettings);
+contactSchema.pre("findOneAndUpdate", addUpdateSettings);
 
 contactSchema.post("findOneAndUpdate", handleSaveError);
 

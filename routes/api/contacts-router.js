@@ -6,7 +6,7 @@ import { isEmptyBody, isEmptyBodyFavorite, isValidId } from "../../midlewares/in
 
 import { validateBody } from '../../decorators/index.js';
 
-import { contactPostSchema, contactPutSchema, contactPatchSchema } from '../../models/Contacts.js';
+import { contactPostSchema, contactPutSchema, contactPatchSchema } from '../../models/Contact.js';
 
 
 const contactsRouter = express.Router()
@@ -19,7 +19,7 @@ contactsRouter.post('/', isEmptyBody, validateBody(contactPostSchema), contactsC
 
 contactsRouter.put('/:contactId', isValidId, isEmptyBody, validateBody(contactPutSchema), contactsController.updateById);
 
-contactsRouter.patch('/:contactId', isValidId, isEmptyBodyFavorite, validateBody(contactPatchSchema), contactsController.updateStatusContact);
+contactsRouter.patch('/:contactId/favorite', isValidId, isEmptyBodyFavorite, validateBody(contactPatchSchema), contactsController.updateStatusContact);
 
 contactsRouter.delete('/:contactId', isValidId, contactsController.deleteById);
 
