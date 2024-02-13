@@ -1,5 +1,9 @@
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import gravatar from "gravatar";
+import path from "path";
+import fs from "fs/promises";
+import Jimp from "jimp";
 
 import User from "../models/User.js";
 
@@ -9,6 +13,8 @@ import { ctrlWrapper } from "../decorators/index.js";
 
 const { JWT_SECRET } = process.env;
 
+const avatarsDir = path.resolve("public", "avatars");
+
 const signup = async(req, res)=> {
     const {email, password} = req.body;
     const user = await User.findOne({email});
@@ -17,8 +23,9 @@ const signup = async(req, res)=> {
     }
     
     const hashPassword = await bcrypt.hash(password, 10);
+    const avatarURL = gravatar.url(email);
 
-    const newUser = await User.create({...req.body, password: hashPassword});
+    const newUser = await User.create({...req.body, password: hashPassword, avatarURL});
 
     res.status(201).json({
         user: {
@@ -82,10 +89,34 @@ if (!result) {
 res.json(result);
 };
 
+const updateAvatar = async (req, res) => {
+    if (!req.file) {
+        throw HttpError(400, 'Avatar must be provided');
+    }
+    const { _id } = req.user;
+    const {path: tmpUpload, originalname} = req.file;
+    const filename = `${Date.now()}-${originalname}`;
+    const resultUpload = path.join(avatarsDir, filename);
+    // await fs.rename(tmpUpload, resultUpload);
+    Jimp.read(tmpUpload, (err, image) => {
+        if (err) throw HttpError(404, err);
+        image.resize(250, 250)
+        .write(resultUpload);
+    });
+    await fs.unlink(tmpUpload);
+    const avatarURL = path.join("avatars", filename);
+    await User.findByIdAndUpdate(_id, {avatarURL});
+
+    res.json({
+        avatarURL,
+    })
+}
+
 export default {
     signup: ctrlWrapper(signup),
     signin: ctrlWrapper(signin),
     getCurrent: ctrlWrapper(getCurrent),
     logout: ctrlWrapper(logout),
     subscription: ctrlWrapper(subscription),
+    updateAvatar: ctrlWrapper(updateAvatar),
 }
